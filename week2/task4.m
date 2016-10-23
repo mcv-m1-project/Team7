@@ -170,3 +170,4 @@ for ii=1:total_images
     message = sprintf('Images processed: %d/%d', num_image, total_images);
     disp(message);
 end
+disp('task4(): done');
