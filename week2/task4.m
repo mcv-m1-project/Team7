@@ -127,7 +127,7 @@ hist_g2 = hist_g2/pixels_g2;
 hist_g3 = hist_g3/pixels_g3;
 
 %% Load mask results images 
-sdir = '../week1/datasets/train_set/validation_split';
+sdir = '../week1/test';
 samples = dir(sdir); 
 samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
 total_images = uint8(length(samples));
@@ -182,7 +182,9 @@ for ii=1:total_images
     end
     %Total mask
     mask=min(1,(mask_g1+mask_g2+mask_g3));
-    mask_dir = sprintf('mask_results_task4_m%s/%s.png', method, name_sample);
+    mask = imfill(mask,'holes');
+    %mask_dir = sprintf('mask_results_task4_m%s/%s.png', method, name_sample);
+    mask_dir = sprintf('mask_results_task4_test_m3/%s.png', name_sample);
     imwrite(mask, mask_dir,'png');
     
     % Message to display on matlab
@@ -201,55 +203,55 @@ end
 % time_per_frame_3 = load('matlab_files/time_per_frame_3.mat');
 % time_per_frame_3 = time_per_frame_3.time_per_frame_3;
 
-% Define metrics struct to save partial results
-metrics = struct('Precision', zeros(0,0),'Accuracy', zeros(0,0), ...
-'Recall', zeros(0,0), 'TP', zeros(0,0), 'FP', zeros(0,0), 'FN', zeros(0,0), ...
-'Time_per_frame', zeros(0,0));
-results = struct('method', metrics);
-
-% Define metrics struct to save final results
-median_metrics = struct('Precision', 0,'Accuracy', 0, 'Recall', 0, 'TP', 0, ...
-'FP', 0, 'FN', 0, 'Time_per_frame', 0);
-final_results = struct('method', median_metrics);
-
-% List directory   
-sdir_m = sprintf('mask_results_task4_m%d', method);
-sdir = '../week1/datasets/train_set/validation_split';
-samples = dir(sdir_m);
-samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
-total_images = uint8(length(samples));
-
-% Get image from struct
-for ii=1:total_images 
-
-% Load our mask
-[~, name_sample, ~] = fileparts(samples(ii).name);
-image = sprintf('%s/%s.png', sdir_m, name_sample);
-image = imread(image);
-
-% Load mask of groundtruth
-[~, name_sample, ~] = fileparts(samples(ii).name);
-dir_mask = sprintf('%s/mask/mask.%s.png', sdir, name_sample);
-mask = logical(imread(dir_mask));
-
-% Get parameters of image using mask
-[TP1, TN1, FP1, FN1, ACC1] = get_parameters(image, mask);
-
-% Get metrics of image using mask
-[R1, P1, AO1, FD1, F11] = get_metrics(TP1, TN1, FP1, FN1);
-
-% % Save results on metric struct
-results.method = save_metrics(results.method, ii, P1, ACC1, R1, F11, TP1, ...
-FP1, FN1, 0);
-
-end
-
-final_results.method = get_results(results.method, final_results.method);
-
-% Save struct of time per frame rate
-results_method = final_results.method;
-save matlab_files/results_method results_method
-disp('Save results_method.mat: done');
+% % Define metrics struct to save partial results
+% metrics = struct('Precision', zeros(0,0),'Accuracy', zeros(0,0), ...
+% 'Recall', zeros(0,0), 'TP', zeros(0,0), 'FP', zeros(0,0), 'FN', zeros(0,0), ...
+% 'Time_per_frame', zeros(0,0));
+% results = struct('method', metrics);
+% 
+% % Define metrics struct to save final results
+% median_metrics = struct('Precision', 0,'Accuracy', 0, 'Recall', 0, 'TP', 0, ...
+% 'FP', 0, 'FN', 0, 'Time_per_frame', 0);
+% final_results = struct('method', median_metrics);
+% 
+% % List directory   
+% sdir_m = sprintf('mask_results_task4_m%d', method);
+% sdir = '../week1/datasets/train_set/validation_split';
+% samples = dir(sdir_m);
+% samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
+% total_images = uint8(length(samples));
+% 
+% % Get image from struct
+% for ii=1:total_images 
+% 
+% % Load our mask
+% [~, name_sample, ~] = fileparts(samples(ii).name);
+% image = sprintf('%s/%s.png', sdir_m, name_sample);
+% image = imread(image);
+% 
+% % Load mask of groundtruth
+% [~, name_sample, ~] = fileparts(samples(ii).name);
+% dir_mask = sprintf('%s/mask/mask.%s.png', sdir, name_sample);
+% mask = logical(imread(dir_mask));
+% 
+% % Get parameters of image using mask
+% [TP1, TN1, FP1, FN1, ACC1] = get_parameters(image, mask);
+% 
+% % Get metrics of image using mask
+% [R1, P1, AO1, FD1, F11] = get_metrics(TP1, TN1, FP1, FN1);
+% 
+% % % Save results on metric struct
+% results.method = save_metrics(results.method, ii, P1, ACC1, R1, F11, TP1, ...
+% FP1, FN1, 0);
+% 
+% end
+% 
+% final_results.method = get_results(results.method, final_results.method);
+% 
+% % Save struct of time per frame rate
+% results_method = final_results.method;
+% save matlab_files/results_method results_method
+% disp('Save results_method.mat: done');
 save('task4(): done');
 end
 
