@@ -26,7 +26,7 @@ for ii=1:total_images
    image = imread(directory);
    image = imerode(image, se);
 
-   mask_dir = sprintf('mask_results_filtered/%s.png', name_sample);
+   mask_dir = sprintf('mask_results_task3/%s.png', name_sample);
    imwrite(image, mask_dir,'png');
    
    % Message to display on matlab
@@ -35,7 +35,7 @@ for ii=1:total_images
    disp(message);
 end
 
-disp('Images saved on mask_results_filtered folder');
+disp('Images saved on mask_results_task3 folder: done');
 disp('task3(): done');
 end
 
