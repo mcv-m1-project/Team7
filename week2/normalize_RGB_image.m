@@ -3,7 +3,6 @@ function normalize_RGB = normalize_RGB_image(image)
     red = double(image(:, :, 1));            
     green = double(image(:, :, 2));           
     blue = double(image(:, :, 3)); 
-
     
     % Normalize each channel
     normalize_red = max(0,red./(red + green + blue));

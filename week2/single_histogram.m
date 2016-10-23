@@ -1,11 +1,18 @@
-function y=single_histogram(image,mask,nbinsr,nbinsg,nbinsb)
+function y=single_histogram(image,mask,nbinsr,nbinsg,nbinsb,method)
 
     s=size(image);
     image=double(image)/255;
-    %image=normalize_RGB_image(image);
-    %image=colorspace('rgb->xyz',image);
+
+    switch method
+        case '2'
+            image = normalize_RGB_image(image);
+        case '3'
+            cd ../colorspace
+            image = colorspace('rgb->xyz',image);
+            cd ../week2
+    end
+       
     histogram=zeros(nbinsr,nbinsg,nbinsb);
-    
     for ii=1:s(1)
         for jj=1:s(2)
             if mask(ii,jj)==1
@@ -17,7 +24,5 @@ function y=single_histogram(image,mask,nbinsr,nbinsg,nbinsb)
             end
         end
     end
-    
     y=histogram;
-    
 end

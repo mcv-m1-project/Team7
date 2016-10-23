@@ -10,6 +10,24 @@ load('matlab_files/images_data.mat');
 path = '../week1/train'; 
 nbinsr = 4; nbinsg = 4; nbinsb = 4;
 
+prompt = 'Wich method would you like run? [1/2/3] : ';
+method = input(prompt,'s');
+if isempty(method)
+        disp('Invalid option');
+else
+    switch method
+        case '1'
+            disp('Method 1 selected');
+        case '2'
+            disp('Method 2 selected');
+        case '3'
+            disp('Method 3 selected');
+        otherwise
+            disp('Unknow method');
+    end
+
+end
+
 % Histograms
 hist_g1 = zeros(nbinsr, nbinsg, nbinsb);
 hist_g2 = zeros(nbinsr, nbinsg, nbinsb);
@@ -35,7 +53,7 @@ for i=1:length(types_abc)
             if exist([path '/' full_name '.jpg'], 'file') == 2
                 img=imread([path '/' full_name '.jpg']);
                 mask=imread([path '/mask/mask.' full_name '.png']);
-               sing_hist=single_histogram(img,mask,nbinsr,nbinsg,nbinsb);
+                sing_hist=single_histogram(img,mask,nbinsr,nbinsg,nbinsb,method);
                 npixels = sum(sum(sum(sing_hist)));
                 pixels_g1 = pixels_g1+npixels;
                 hist_g1=hist_g1+sing_hist;
@@ -62,7 +80,7 @@ for i=1:length(types_df)
             if exist([path '/' full_name '.jpg'], 'file') == 2
                 img=imread([path '/' full_name '.jpg']);
                 mask=imread([path '/mask/mask.' full_name '.png']);
-                sing_hist=single_histogram(img,mask,nbinsr,nbinsg,nbinsb);
+                sing_hist=single_histogram(img,mask,nbinsr,nbinsg,nbinsb,method);
                 npixels=sum(sum(sum(sing_hist)));
                 pixels_g2=pixels_g2+npixels;
                 hist_g2=hist_g2+sing_hist;
@@ -87,7 +105,7 @@ for ll=1:length(images_data.E)
     if exist([path '/' full_name '.jpg'], 'file') == 2
         img=imread([path '/' full_name '.jpg']);
         mask=imread([path '/mask/mask.' full_name '.png']);
-        sing_hist=single_histogram(img,mask,nbinsr,nbinsg,nbinsb);
+        sing_hist=single_histogram(img,mask,nbinsr,nbinsg,nbinsb,method);
         npixels=sum(sum(sum(sing_hist)));
         pixels_g3=pixels_g3+npixels;
         hist_g3=hist_g3+sing_hist;
@@ -119,10 +137,10 @@ for ii=1:total_images
     directory = sprintf('%s/%s.jpg', sdir, name_sample);
     image = imread(directory);
     % Compute masks
-    mask_g3 = compute_probability(image,hist_g3,nbinsr,nbinsg,nbinsb);
-    mask_g1 = compute_probability(image,hist_g1,nbinsr,nbinsg,nbinsb);
+    mask_g3 = compute_probability(image,hist_g3,nbinsr,nbinsg,nbinsb,method);
+    mask_g1 = compute_probability(image,hist_g1,nbinsr,nbinsg,nbinsb,method);
     mask_g1 = mask_g1/(max(max(mask_g1)));
-    mask_g2 = compute_probability(image,hist_g2,nbinsr,nbinsg,nbinsb);
+    mask_g2 = compute_probability(image,hist_g2,nbinsr,nbinsg,nbinsb,method);
     mask_g2 = mask_g2/(max(max(mask_g2)));
     %for g3
     s=size(mask_g3);
@@ -162,7 +180,7 @@ for ii=1:total_images
     end
     %Total mask
     mask=min(1,(mask_g1+mask_g2+mask_g3));
-    mask_dir = sprintf('mask_results_task4/%s.png', name_sample);
+    mask_dir = sprintf('mask_results_task4_m%s/%s.png', method, name_sample);
     imwrite(mask, mask_dir,'png');
     
     % Message to display on matlab
