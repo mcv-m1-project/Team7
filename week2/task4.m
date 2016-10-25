@@ -252,7 +252,7 @@ end
 % results_method = final_results.method;
 % save matlab_files/results_method results_method
 % disp('Save results_method.mat: done');
-save('task4(): done');
+disp('task4(): done');
 end
 
 % Function: plot_images
