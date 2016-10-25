@@ -1,4 +1,4 @@
-# Week3
+# Week 3
 
   - task1(). Implement a function for CCL that labels all connected components
 	in a binary image and returns a list of the bounding boxes. To discard false
