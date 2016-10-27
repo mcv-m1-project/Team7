@@ -14,7 +14,7 @@ fprintf('\n');
 % Clear screen
 clear all;     
 disp('List train directory: done');
-samples = dir('train');     
+samples = dir('../train');     
 
 %% READ IMAGES IN THE TRAIN FOLDER
 samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
@@ -31,7 +31,7 @@ zeros(n, m),'D', zeros(n, m), 'E', zeros(n, m),'F', zeros(n, m));
 disp('Load dataset train: done');
 for ii=1:length(samples)
 [~, name_sample, ~] = fileparts(samples(ii).name);
-file = fileread(['train/gt/gt.' name_sample '.txt']);
+file = fileread(['../train/gt/gt.' name_sample '.txt']);
 lines= regexp(file, '\n', 'split');
 
     for jj=1:(length(lines)-1)
@@ -53,7 +53,7 @@ lines= regexp(file, '\n', 'split');
         value(5) = value(2)*value(3);           % bbox area
 
         % Read mask image
-        directory = sprintf('train/mask/mask.%s.png', name_sample);
+        directory = sprintf('../train/mask/mask.%s.png', name_sample);
         mask = imread(directory);
         % Compute area = count number of white pÃ­xels
         value(6) = sum(sum(mask));

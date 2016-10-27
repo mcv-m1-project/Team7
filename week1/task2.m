@@ -21,15 +21,15 @@ else
             images_data = load('matlab_files/images_data.mat');
             images_data = images_data.images_data;
             % Create new directories
-            if ~exist('datasets/train_set', 'dir')
+            if ~exist('../datasets/train_set', 'dir')
                 % Train split directories
-                mkdir('datasets/train_set/train_split');
-                mkdir('datasets/train_set/train_split/gt');
-                mkdir('datasets/train_set/train_split/mask');
+                mkdir('../datasets/train_set/train_split');
+                mkdir('../datasets/train_set/train_split/gt');
+                mkdir('../datasets/train_set/train_split/mask');
                 % Validations split directories
-                mkdir('datasets/train_set/validation_split');
-                mkdir('datasets/train_set/validation_split/gt');
-                mkdir('datasets/train_set/validation_split/mask');
+                mkdir('../datasets/train_set/validation_split');
+                mkdir('../datasets/train_set/validation_split/gt');
+                mkdir('../datasets/train_set/validation_split/mask');
             end
             %% Split types
             array_types = {'A','B','C','D','E','F'};
@@ -48,20 +48,20 @@ else
                     % Put image on train or validation split, depending on value of
                     % num_training calculated before
                     if pp <= num_training     
-                        image_directory = 'datasets/train_set/train_split';
-                        gt_directory = 'datasets/train_set/train_split/gt';
-                        mask_direcotry = 'datasets/train_set/train_split/mask';
+                        image_directory = '../datasets/train_set/train_split';
+                        gt_directory = '../datasets/train_set/train_split/gt';
+                        mask_direcotry = '../datasets/train_set/train_split/mask';
                     else
-                        image_directory = 'datasets/train_set/validation_split';
-                        gt_directory = 'datasets/train_set/validation_split/gt';
-                        mask_direcotry = 'datasets/train_set/validation_split/mask';
+                        image_directory = '../datasets/train_set/validation_split';
+                        gt_directory = '../datasets/train_set/validation_split/gt';
+                        mask_direcotry = '../datasets/train_set/validation_split/mask';
                     end
                     % Copy image
-                    copyfile(['train/' name_file '.jpg'], image_directory);
+                    copyfile(['../train/' name_file '.jpg'], image_directory);
                     % Copy gt file
-                    copyfile(['train/gt/gt.' name_file '.txt'], gt_directory);
+                    copyfile(['../train/gt/gt.' name_file '.txt'], gt_directory);
                     % Copy mask
-                    copyfile(['train/mask/mask.' name_file '.png'], mask_direcotry);
+                    copyfile(['../train/mask/mask.' name_file '.png'], mask_direcotry);
                 end
             end
             fprintf('done\n');
@@ -75,19 +75,19 @@ else
         if strcmp(str, 'test')
             disp('Dataset test selected');
             % Create new directory
-            if ~exist('datasets/test_set', 'dir')
+            if ~exist('../datasets/test_set', 'dir')
                 % Train split directories
-                mkdir('datasets/test_set');
+                mkdir('../datasets/test_set');
             end    
             % Load image directory
-            image_directory = 'datasets/test_set';
-            samples = dir('test');  
+            image_directory = '../datasets/test_set';
+            samples = dir('../test');  
             samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
             for ii=1:length(samples)
                 % Get name file
                 [~, name_sample, ~] = fileparts(samples(ii).name);
                 % Copy image into dataset
-                copyfile(['test/' name_sample '.jpg'], image_directory);
+                copyfile(['../test/' name_sample '.jpg'], image_directory);
             end  
             disp('Directory datasets/test_set created');
         else

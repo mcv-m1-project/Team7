@@ -10,13 +10,13 @@ if isempty(str)
 else
     if strcmp(str, 'train')
         disp('Split train selected');
-        sdir = 'datasets/train_set/train_split';
-        samples = dir('datasets/train_set/train_split'); 
+        sdir = '../datasets/train_set/train_split';
+        samples = dir('../datasets/train_set/train_split'); 
     else
         if strcmp(str, 'validation')
             disp('Split validation selected');
-            sdir = 'datasets/train_set/validation_split';
-            samples = dir('datasets/train_set/validation_split');         
+            sdir = '../datasets/train_set/validation_split';
+            samples = dir('../datasets/train_set/validation_split');         
         end  
         disp('Unknow option [?]');
         disp('Rerun task4 and choose a valid option [train/validation]')
@@ -52,7 +52,7 @@ for ii=1:total_images
 % Load image from segmentation method 1
 message = sprintf('Loading image: %d/%d segmented 1', ii, total_images);
 disp(message);
-image_1 = matfile('matlab_files/images_segmented_1.mat') ;
+image_1 = matfile('matlab_files/images_segmented_1.mat');
 image_1 = image_1.images_segmented_1(ii, :, :);   
 image_1 = logical(squeeze(image_1(1,:,:)));
 

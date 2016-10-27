@@ -25,21 +25,21 @@ else
             disp('Invalid option');
         else
             if strcmp(str, 'train')
-                sdir = 'datasets/train_set/train_split';
-                samples = dir('datasets/train_set/train_split'); 
+                sdir = '../datasets/train_set/train_split';
+                samples = dir('../datasets/train_set/train_split'); 
                 disp('Split train selected'); 
             else
                 if strcmp(str, 'validation')
-                    sdir = 'datasets/train_set/validation_split';
-                	samples = dir('datasets/train_set/validation_split');
+                    sdir = '../datasets/train_set/validation_split';
+                	samples = dir('../datasets/train_set/validation_split');
                     disp('Split validation selected'); 
                 end
             end
         end      
     else
         disp('Dataset test selected');
-        sdir = 'datasets/test_set';
-        samples = dir('datasets/test_set'); 
+        sdir = '../datasets/test_set';
+        samples = dir('../datasets/test_set'); 
     end
 end
 
