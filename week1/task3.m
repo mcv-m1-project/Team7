@@ -98,7 +98,7 @@ for ii=1:total_images
     tic
     cd ..
     cd colorspace
-    image_hsv = colorspace('rgb->xyz',image);
+    image_hsv = colorspace('rgb->xyz',double(image));
     cd ..
     cd week1
     image_segmented = segmentation_by_equation(image_hsv);
