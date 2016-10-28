@@ -12,8 +12,7 @@ show_description_on_screen();
 if valid_option == 1
 
     % Define parameters
-    %bounding_boxes_list = struct('a',zeros(0, 0, 0, 0, 0));
-    bounding_boxes_list = struct();
+    bounding_boxes_list = struct();     % List of bounding boxes
     area_min = 300;                     % Minimum area to recognize signal
     ratio_min = 0.6;                    % Minimum ratio to recongnize signal
     num_image = 0;                      % Number of image to display text
@@ -99,7 +98,7 @@ if valid_option == 1
         disp(message);
     end
 
-save_dir = strcat('matlab_files/bounding_boxes_',dataset);
+save_dir = strcat('matlab_files/connected_component_labeling/ccl_bounding_boxes_', dataset);
 save(save_dir, 'bounding_boxes_list', '-v7.3');
 disp('Save bounding_boxes_list.mat: done');
 end
