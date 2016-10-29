@@ -42,8 +42,9 @@ function matrix_detection=window_detection(mask, processing)
                     else
                         if processing == 's'
                             candidate = compute_candidate(window);
-                        else
-                            candidate = compute_candidate_integral(window);
+                        elseif processing == 'i'
+                            candidate = compute_candidate_integral(mask,...
+                            r1, r2, c1, c2);
                         end
                          
                         if candidate ~= 0
