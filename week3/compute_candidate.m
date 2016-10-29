@@ -1,24 +1,24 @@
 function candidate = compute_candidate(window)
-    %4 subwindow
+    % 4 subwindow
     len_window = size(window);
     len = len_window(1);
     
     if sum(sum(window))/(len*len)<0.3
-        candidate=0;
+        candidate = 0;
     else
-        win_1=window(1:len/2,1:len/2);
-        win_2=window(1:len/2,len/2+1:len);
-        win_3=window(len/2+1:len,1:len/2);
-        win_4=window(len/2+1:len,len/2+1:len);
+        win_1 = window(1:len/2,1:len/2);
+        win_2 = window(1:len/2,len/2+1:len);
+        win_3 = window(len/2+1:len,1:len/2);
+        win_4 = window(len/2+1:len,len/2+1:len);
 
-        win_1_rel=(sum(sum(win_1)))/((len/2)*(len/2));
-        win_2_rel=(sum(sum(win_2)))/((len/2)*(len/2));
-        win_3_rel=(sum(sum(win_3)))/((len/2)*(len/2));
-        win_4_rel=(sum(sum(win_4)))/((len/2)*(len/2));
+        win_1_rel = (sum(sum(win_1)))/((len/2)*(len/2));
+        win_2_rel = (sum(sum(win_2)))/((len/2)*(len/2));
+        win_3_rel = (sum(sum(win_3)))/((len/2)*(len/2));
+        win_4_rel = (sum(sum(win_4)))/((len/2)*(len/2));
 
-        area_sup_tri=(len/4)*(len/2);
-        area_tol=1.2;
-        area_tol_2=0.5;
+        area_sup_tri = (len/4)*(len/2);
+        area_tol = 1.2;
+        area_tol_2 = 0.5;
 
         % Square detected
         if win_1_rel<=1 && win_1_rel>=0.9 && win_2_rel<=1 && win_2_rel>=0.9 ...

@@ -1,8 +1,9 @@
-%% Task 2 -> region based detection
+%% Task 2 -> Region based detection
+%% Task 3 -> Computing the integral image
 
-function task2()
+function task23()
 % User menu to choose dataset 
-[dataset, valid_option] = choose_dataset;
+[dataset, valid_option, processing] = choose_dataset;
 
 % Read pixel candidates, mask generated in the other weeks
 mask_dir = 'improved_mask_';
@@ -22,8 +23,8 @@ for ii=1:total_images
     disp(message);
     
     mask = imread([mask_dir num2str(files(ii).name)]);
-    matrix_detection = window_detection(mask);
-    
+    matrix_detection = window_detection(mask, processing);
+        
     if sum(matrix_detection(1,:))~=0
     
         % find the number of clusters to select a single detection per object
@@ -52,13 +53,13 @@ for ii=1:total_images
         
         % Prepare data
         for kk=1:size(C,1)
-            bounding_boxes(kk,1) = C(kk,2);
+            bounding_boxes(kk,1) = C(kk,3);
             bounding_boxes(kk,2) = C(kk,1);
             bounding_boxes(kk,3) = C(kk,4)-C(kk,3);
             bounding_boxes(kk,4) = C(kk,2)-C(kk,1);
         end
     else
-        bounding_boxes(1,1) = matrix_detection(1,2);
+        bounding_boxes(1,1) = matrix_detection(1,3);
         bounding_boxes(1,2) = matrix_detection(1,1);
         bounding_boxes(1,3) = matrix_detection(1,4)-matrix_detection(1,3);
         bounding_boxes(1,4) = matrix_detection(1,2)-matrix_detection(1,1);
@@ -121,7 +122,7 @@ end
 % Description: user menu to choose dataset
 % Input: None
 % Output: dataset
-function [dataset, valid_option] = choose_dataset()
+function [dataset, valid_option, processing] = choose_dataset()
 valid_option = 0;
 prompt = 'Do you want mork on train or test dataset? [train/test] : ';
 dataset = input(prompt,'s');
@@ -146,4 +147,16 @@ switch dataset
     otherwise
         disp('Unknow option');
 end
+
+prompt = 'Do you want use siliding windows or integral image? [s/i] : ';
+processing = input(prompt,'s');
+switch dataset
+    case 's'
+        disp('Method: sliding window selected');
+    case 'i'
+        disp('Method: integral image selected');
+    otherwise    
+        disp('Unknow option');
+end
+
 end

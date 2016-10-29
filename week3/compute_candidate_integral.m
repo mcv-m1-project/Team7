@@ -2,7 +2,7 @@ function candidate = compute_candidate_integral(mask, r1, r2, c1, c2)
     % 4 subwindow
     len = r2-r1;
     
-    %Use of integral image
+    % Use of integral image
     img_integral = cumsum(cumsum(mask),2);
     white_sum = img_integral()-img_integral()-img_integral+img_integral();
     

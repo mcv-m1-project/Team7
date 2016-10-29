@@ -1,4 +1,4 @@
-function matrix_detection=window_detection(mask)
+function matrix_detection=window_detection(mask, processing)
     detect = 1;
     s = size(mask);
     
@@ -40,8 +40,12 @@ function matrix_detection=window_detection(mask)
                        (0.25*(r2-r1)*(r2-r1))
                         jj = c2+1;
                     else
-                        % disp('Compute candidate...');
-                        candidate = compute_candidate(window);
+                        if processing == 's'
+                            candidate = compute_candidate(window);
+                        else
+                            candidate = compute_candidate_integral(window);
+                        end
+                         
                         if candidate ~= 0
                             matrix_detection(detect,1) = r1;
                             matrix_detection(detect,2) = r2;
