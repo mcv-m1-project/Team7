@@ -40,7 +40,7 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
         % Image to show only detections of signals
         [image_n, image_m] = size(image);
         image_detections = zeros(image_n, image_m);
-        %figure, imshow(image)
+        figure, imshow(image)
        
         % Load specific bounding box from improved mask
         sname_sample = strrep(name_sample,'.','');
@@ -70,7 +70,7 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
             if(bb(jj,1) ~= 0 && bb(jj,2) ~= 0 && bb(jj,3) ~= 0 && ...
             bb(jj,4) ~= 0)
                 detections = detections + 1;
-                %rectangle('Position', bb(jj,:), 'EdgeColor','y', 'LineWidth',2); 
+                rectangle('Position', bb(jj,:), 'EdgeColor','y', 'LineWidth',2); 
                 %rectangle('Position', bb_gt, 'EdgeColor','g', 'LineWidth',2);
                 
                 if strcmp(dataset, 'test') == 0
@@ -116,9 +116,7 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
                 detections, floor((discard_detections/detections)*100));
             else
                 disp('Non detections');
-            end
-            % pause();
-            % close all;        
+            end       
 
             % Calculate metrics of image_dections and image
             [TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
@@ -126,6 +124,8 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
             results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
             FP, FN, 0); 
         end
+        pause();
+        close all; 
     end
     
     if strcmp(dataset, 'test') == 0

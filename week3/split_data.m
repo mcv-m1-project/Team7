@@ -16,16 +16,20 @@ function split_data(data)
         [n, m] = size(bb_1);
         windowCandidates = [];
         if m> 4 
-            min = 1;
-            max = 4;
+            pos_x = 1;
+            pos_y = 3;
+            pos_w = 5;
+            pos_h = 7;
             bf = zeros((m/4), 4);
             for jj=1:(m/4)
-                bf(jj, 1:4) =  bb_1(1, min:max);
-                min = min + 4;
-                max = max + 4;
-                    
-                windowCandidates = [windowCandidates, struct('x',bf(jj, 1),'y',bf(jj, 2),...
-                'w',bf(jj, 3),'h',bf(jj, 4));];
+               windowCandidates = [windowCandidates, ...
+               struct('x',bb_1(1, pos_x), 'y',bb_1(1, pos_y), ...
+                      'w',bb_1(1, pos_w), 'h',bb_1(1, pos_h));];
+                pos_x = pos_x + 1;
+                pos_y = pos_y + 1;
+                pos_w = pos_w + 1;
+            	pos_h = pos_h + 1;
+                  
             end
             bb_1 = bf;
         else
@@ -46,7 +50,7 @@ function split_data(data)
         a = name(1:2);
         b = name(3:length(name));
         name = strcat(a, '.', b);
-        save_dir = strcat('split_data/', name, '.mat');
+        save_dir = strcat('split_data_method3/', name, '.mat');
         save(save_dir, 'windowCandidates');
     end
 end
