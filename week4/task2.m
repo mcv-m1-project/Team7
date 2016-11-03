@@ -4,41 +4,56 @@ function task2()
 % Show description on screen about task1
 show_description_on_screen();
 
-% User menu to choose dataset 
-[dataset, valid_option] = choose_dataset;
-% Check if dataset is correct
-if valid_option == 1
-    print_windowCandidates_on_mask(dataset);
-end
+B = imread('improved_masks/train/00.000978.png');   % Load mask B
+B = edge(B, 'Canny');                               % Edges computed by Canny
 
-% Load mask B.
-% Edges computed by Canny
-B = imread('00.000948.png');
-B = edge(B, 'Canny');
+template_size = 300;
 
-%---------- Create circular template ------------%
-radius_centered_location = 40;
-total_size = 80;
-circle_size = 20;
-T = get_circular_template(radius_centered_location, total_size, circle_size);
-T = edge(T, 'Canny');
+%T1 = get_square_template(template_size);       % Square template
+T1 = get_triangle_template(template_size);      % Triangle template
+T1 = imrotate(T1, 180);                         % Inverted triangle template
+%T1 = get_circular_template(template_size);     % Circular template
+
+T2 = edge(T1, 'Canny'); 
 
 % Computes the Euclidean distance transform of the image B
 DT = bwdist(B, 'Euclidean');
 
 % Find placement of T in D that minimizes the sum, M, of the DT multiplied by the
 % pixel values in T. This operation can be implemented as find the minimum of the 
-% convolution of the template and distance image
-C = conv2(DT, double(T), 'valid');
-[ColumnMin, Y] = min(C);
-[~, X] = min(ColumnMin);
-min_x = X;
-min_y = Y(X);
+% 2D convolution of the template and distance image
+C = conv2(DT, double(T2), 'valid');
+
+% Get minimum values of 2D convolution
+[ColumnMin_x, ColumnMin_y] = min(C);
+[~, min_x1] = min(ColumnMin_x);
+[min_y1, ~] = min(ColumnMin_y);
+
+% Perform another convolution with a solid template to find displacement of
+% matching position
+C2 = conv2(DT, double(T1),'valid');
+
+% Compute threshold on 2D convolution
+thresold = (2 * template_size + 1)^2 * 3;
+C(C2<thresold) = max(max(C));
+%figure('Name', '2D convolution computing threshold'), ...
+%surf(double(C)), shading flat;
+%pause();
+%close;
+
+% Calculate displacement of match position
+[ColumnMin_x, ColumnMin_y] = min(C);
+[~, min_x2] = min(ColumnMin_x);
+[min_y2, ~] = min(ColumnMin_y);
+
+% Calculate positions of matching
+x = min_x1+(min_x1-min_x2);
+y = min_y1+(min_y1-min_y2);
 
 % Plot location of detection
-figure, imshow(B);
+figure('Name', 'B image: location of detection'), imshow(B);
 hold on;
-plot(min_x, min_y, 'y.', 'MarkerSize', 30)
+plot(x+(template_size/2), y+(template_size/2), 'g.', 'MarkerSize', 30)
 pause();
 close all;
 end
@@ -61,13 +76,89 @@ end
 
 % Function: get_circular_template
 % Description: create circular template
-% Input: radius_centered_location, total_size, circle_size
-% Output: template
-function template = get_circular_template(radius_centered_location, total_size, ...
- circle_size)
-[rr, cc] = meshgrid(1:total_size);
+% Input: template_size
+% Output: circular template
+function template = get_circular_template(template_size)
+radius_centered_location = template_size/2;
+circle_size = radius_centered_location-5;
+[rr, cc] = meshgrid(1:template_size);
 template = sqrt((rr-radius_centered_location).^2+(cc-radius_centered_location).^2) ...
 <=circle_size;
+end
+
+% Function: get_triangle_template
+% Description: create triangle template
+% Input: template_size
+% Output: triangle template
+function template = get_triangle_template(template_size)
+radius_centered_location = template_size/2;
+template = zeros(template_size, template_size);
+
+% Define points of triangle. point = [y, x]
+p1 = [template_size-10, 10];
+p2 = [template_size-10, template_size-10];
+p3 = [10, radius_centered_location];
+
+% Set points on background
+template(p1(1), p1(2)) = 1;
+template(p2(1), p2(2)) = 1;
+template(p3(1), p3(2)) = 1;
+
+% Draw first line
+array_x = p1(1):p2(1);
+array_y = p1(2):p2(2);
+template(array_x, array_y) = 1;
+
+% Draw second line
+[~, my] = size(array_y);
+a = floor(linspace(p1(1), p3(1), (my-1)));
+b = floor(linspace(p1(2), p3(2), (my-1)));
+[~, ma] = size(a);
+for ii=1:ma
+    template(a(ii), b(ii)) = 1;
+end
+template(p1(1)-1, p1(2)) = 1;
+
+% Draw third line
+a = floor(linspace(p2(1), p3(1), (my-1)));
+b = floor(linspace(p2(2), p3(2), (my-1)));
+for ii=1:ma
+    template(a(ii), b(ii)) = 1;
+end
+template(p2(1)-1, p2(2)) = 1;
+
+% Fill triangle
+template = imfill(template,'holes');
+end
+
+% Function: get_square_template
+% Description: create square template
+% Input: template_size
+% Output: triangle template
+function template = get_square_template(template_size)
+template = zeros(template_size, template_size);
+
+% Define points of square. point = [y, x]
+p1 = [template_size-10, template_size-10];
+p2 = [template_size-10, 10];
+p3 = [10, template_size-10];
+p4 = [10, 10];
+
+% Set points on background
+template(p1(1), p1(2)) = 1;
+template(p2(1), p2(2)) = 1;
+template(p3(1), p3(2)) = 1;
+template(p4(1), p4(2)) = 1;
+
+% Draw horizontal lines
+array = p2(2):p1(2);
+template(10, array) = 1;
+template(template_size-10, array) = 1;
+template(array, 10) = 1;
+template(array, template_size-10) = 1;
+
+% Fill square
+template = imfill(template,'holes');
 end
 
 % Function: choose_dataset
@@ -99,50 +190,4 @@ switch dataset
     otherwise
         disp('Unknow option');
 end
-end
-
-% Function: print_windowCandidates_on_mask
-% Description: print window candidates on mask
-% Input: None
-% Output: None
-function print_windowCandidates_on_mask(dataset)
-    % Load improved masks
-    sdir_masks = strcat('improved_masks/', dataset);
-    samples = dir(sdir_masks); 
-    samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
-    total_images = uint8(length(samples));
-    num_image = 0;
-    
-    % Load window candidates
-    sdir_windows = strcat('windowCandidates/', dataset); 
-
-    disp('Starting image processing...');
-    for ii=1:total_images  
-        % Load improved mask
-        [~, name_sample, ~] = fileparts(samples(ii).name);
-        directory = sprintf('%s/%s.png', sdir_masks, name_sample);
-        mask = logical(imread(directory));
-        figure, imshow(mask)
-       
-        % Load windowCandidate
-        directory = sprintf('%s/%s.mat', sdir_windows, name_sample);
-        windowCandidates = load(directory);
-        windowCandidates = windowCandidates.windowCandidates;
-        
-        [n, ~] = size(windowCandidates);
-        for jj=1:n
-            bounding_box = [windowCandidates(jj).x windowCandidates(jj).y ...
-                            windowCandidates(jj).w windowCandidates(jj).h];
-            if any(bounding_box)
-                rectangle('Position', bounding_box, 'EdgeColor','green', 'LineWidth', 2); 
-            end
-        end
-        pause();
-        close all;
-        
-        num_image = num_image + 1;
-        message = sprintf('Images processed: %d/%d. Image name: %s', num_image, total_images, ...
-        name_sample);
-        disp(message);
-    end
 end
