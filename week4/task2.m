@@ -78,29 +78,29 @@ pos_mask = [windowCandidate.x+(windowCandidate.w/2), windowCandidate.y+(windowCa
 disp('Processing square template matching...');
 t_square = get_square_template(template_size);             
 pos_square = compute_chanfer_distance(mask, t_square, template_size);
-vdistance = [pos_mask(1), pos_mask(2); pos_square(1), pos_square(2)];      
-dist_square = pdist(vdistance, 'euclidean');
+vdistance_s = [pos_mask(1), pos_mask(2); pos_square(1), pos_square(2)];      
+dist_square = pdist(vdistance_s, 'euclidean');
 
 % Process triangle template
 disp('Processing triangle template matching...');
 t_triangle = get_triangle_template(template_size);         
 pos_triangle = compute_chanfer_distance(mask, t_triangle, template_size);
-vdistance = [pos_mask(1), pos_mask(2); pos_triangle(1), pos_triangle(2)];      
-dist_triangle = pdist(vdistance, 'euclidean');
+vdistance_t = [pos_mask(1), pos_mask(2); pos_triangle(1), pos_triangle(2)];      
+dist_triangle = pdist(vdistance_t, 'euclidean');
 
 % Process inverted triangle template
 disp('Processing inverted triangle template matching...');
 t_itriangle = imrotate(t_triangle, 180);      
 pos_itriangle = compute_chanfer_distance(mask, t_itriangle, template_size);
-vdistance = [pos_mask(1), pos_mask(2); pos_itriangle(1), pos_itriangle(2)];      
-dist_itriangle = pdist(vdistance, 'euclidean');
+vdistance_it = [pos_mask(1), pos_mask(2); pos_itriangle(1), pos_itriangle(2)];      
+dist_itriangle = pdist(vdistance_it, 'euclidean');
 
 % Process circular template
 disp('Processing circular template matching...');
 t_circular = get_circular_template(template_size);      
 pos_circular = compute_chanfer_distance(mask, t_circular, template_size);
-vdistance = [pos_mask(1), pos_mask(2); pos_circular(1), pos_circular(2)];      
-dist_circular = pdist(vdistance, 'euclidean');
+vdistance_c = [pos_mask(1), pos_mask(2); pos_circular(1), pos_circular(2)];      
+dist_circular = pdist(vdistance_c, 'euclidean');
 
 [dmin, pos] = min([dist_square, dist_triangle, dist_itriangle, dist_circular]);
 max_distance = 100;
