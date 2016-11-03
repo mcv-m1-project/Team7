@@ -46,7 +46,7 @@ if valid_option == 1
         disp(message);
     end
 end
-disp();
+disp('show_windows_on_masks(): done');
 end
 
 % Function: choose_dataset
