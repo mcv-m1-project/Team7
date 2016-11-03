@@ -1,6 +1,6 @@
 function split_data(data)
     % Load mask folder
-    samples = dir('../datasets/test_set'); 
+    samples = dir('../datasets/test_set/'); 
     samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
     total_images = uint8(length(samples));
 
@@ -16,13 +16,16 @@ function split_data(data)
         [n, m] = size(bb_1);
         windowCandidates = [];
         if m> 4 
-            pos_x = 1;
-            pos_y = 3;
-            pos_w = 5;
-            pos_h = 7;
+            jump = m/4;
+            pos_x = (1 * jump) - (jump-1);
+            pos_y = (2 * jump) - (jump-1);
+            pos_w = (3 * jump) - (jump-1);
+            pos_h = (4 * jump) - (jump-1);
             bf = zeros((m/4), 4);
+           
+            
             for jj=1:(m/4)
-               windowCandidates = [windowCandidates, ...
+               windowCandidates = [windowCandidates; ...
                struct('x',bb_1(1, pos_x), 'y',bb_1(1, pos_y), ...
                       'w',bb_1(1, pos_w), 'h',bb_1(1, pos_h));];
                 pos_x = pos_x + 1;
@@ -38,9 +41,9 @@ function split_data(data)
            end
            
            if isempty(bb_1)
-               windowCandidates = [windowCandidates , struct('x',0,'y',0,'w',0,'h',0)];
+               windowCandidates = [windowCandidates ; struct('x',0,'y',0,'w',0,'h',0)];
            else
-               windowCandidates = [windowCandidates , struct('x',bb_1(1, 1),'y',bb_1(1, 2),...
+               windowCandidates = [windowCandidates ; struct('x',bb_1(1, 1),'y',bb_1(1, 2),...
                'w',bb_1(1, 3),'h',bb_1(1, 4))];
            end
 
@@ -50,7 +53,7 @@ function split_data(data)
         a = name(1:2);
         b = name(3:length(name));
         name = strcat(a, '.', b);
-        save_dir = strcat('split_data_method3/', name, '.mat');
+        save_dir = strcat('split_data/', name, '.mat');
         save(save_dir, 'windowCandidates');
     end
 end

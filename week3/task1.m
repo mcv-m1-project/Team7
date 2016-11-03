@@ -41,7 +41,7 @@ if valid_option == 1
         'Area');
 
         % Uncoment to show images
-        % figure, imshow(image);
+        figure, imshow(image);
         
         % Discard objects that are not belongs to signal
         for i=1:length(shape_mesarurements)
@@ -57,7 +57,7 @@ if valid_option == 1
               boundingBox(4)];
           
               % Show bounding box on image
-              % show_bounding_boxes(image, boundingBox, area, ratio);
+              show_bounding_boxes(image, boundingBox, area, ratio);
 
           else
                 boundingBox = [0, 0, 0, 0];
@@ -89,8 +89,8 @@ if valid_option == 1
         end
 
         % Uncoment to show images
-        % pause;
-        % close all;
+        pause;
+        close all;
         
         % Message to display on matlab
         num_image = num_image + 1;

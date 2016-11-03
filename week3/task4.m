@@ -40,7 +40,7 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
         % Image to show only detections of signals
         [image_n, image_m] = size(image);
         image_detections = zeros(image_n, image_m);
-        figure, imshow(image)
+        %figure, imshow(image)
        
         % Load specific bounding box from improved mask
         sname_sample = strrep(name_sample,'.','');
@@ -71,7 +71,7 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
             bb(jj,4) ~= 0)
                 detections = detections + 1;
                 rectangle('Position', bb(jj,:), 'EdgeColor','y', 'LineWidth',2); 
-                %rectangle('Position', bb_gt, 'EdgeColor','g', 'LineWidth',2);
+                % rectangle('Position', bb_gt, 'EdgeColor','g', 'LineWidth',2);
                 
                 if strcmp(dataset, 'test') == 0
                     detection_value = calculate_correct_detection_value(bb, ...
@@ -90,12 +90,11 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
                 y2 = max(floor(bb(jj,1)+bb(jj,3)), 1);
                 image_detections(x1:x2, y1:y2) = image(x1:x2, y1:y2);
                 
-                if strcmp(dataset, 'test') == 1
-                    simage = sprintf('mask_results_test/%s/%s.png', method, name_sample);
-                    imwrite(image_detections, simage,'png');
-                end
             end                   
         end
+        
+        simage = sprintf('mask_results_test/%s/%s.png', method, name_sample);
+        imwrite(image_detections, simage,'png');
         
         if ((strcmp(dataset, 'test') == 1) && (detections == 0))
         	simage = sprintf('mask_results_test/%s/%s.png', method, name_sample);
@@ -119,21 +118,21 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
             end       
 
             % Calculate metrics of image_dections and image
-            [TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
-            [R, P, AO, FD, F1] = get_metrics(TP, TN, FP, FN);
-            results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
-            FP, FN, 0); 
+            %[TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
+            %[R, P, AO, FD, F1] = get_metrics(TP, TN, FP, FN);
+            %results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
+            %FP, FN, 0); 
         end
-        pause();
-        close all; 
+        % pause();
+        % close all; 
     end
     
     if strcmp(dataset, 'test') == 0
-        final_results.(method) = get_results(results.(method),final_results.(method));
-        results = final_results.(method);
-        sdir = sprintf('matlab_files/evaluation/results_%s_%s.mat', method, dataset);
-        save(sdir, 'results');
-        fprintf('Save %s: done', sdir);
+        %final_results.(method) = get_results(results.(method),final_results.(method));
+        %results = final_results.(method);
+        %sdir = sprintf('matlab_files/evaluation/results_%s_%s.mat', method, dataset);
+        %save(sdir, 'results');
+        %fprintf('Save %s: done', sdir);
     end
 end
 disp('task4(): done');
