@@ -18,7 +18,7 @@ if valid_option == 1
     num_image = 0;
     
     % Load window candidates
-    sdir_windows = strcat('windowCandidates/', dataset); 
+    sdir_windows = strcat('windowCandidates_old/', dataset); 
     disp('Starting image processing...');
     
     for ii=1:total_images  
@@ -39,7 +39,10 @@ if valid_option == 1
         directory = sprintf('%s/%s.mat', sdir_windows, name_sample);
         windowCandidates = load(directory);
         windowCandidates = windowCandidates.windowCandidates;
-
+        
+        % List to save valid windowCandidates that match with templates
+        windowCandidates_new = [];
+        
         % Compute each windowCandidate
         [n, ~] = size(windowCandidates);
         num_window = 0;
@@ -48,12 +51,23 @@ if valid_option == 1
             message = sprintf('Running template maching on window candidate: %d/%d', ...
             num_window, n);
             disp(message);
-            bounding_box = [windowCandidates.x windowCandidates.y windowCandidates.w ...
-                            windowCandidates.h];
+            bounding_box = [windowCandidates(jj).x windowCandidates(jj).y 
+                            windowCandidates(jj).w windowCandidates(jj).h];
             if any(bounding_box)
-                template_maching(mask, windowCandidates(jj));  
+                is_valid = template_maching(mask, windowCandidates(jj));  
+                
+                if is_valid
+                   windowCandidates_new = [windowCandidates_new; ...
+                   struct('x', windowCandidates(jj).x, 'y', windowCandidates(jj).y, ...
+                          'w', windowCandidates(jj).w, 'h', windowCandidates(jj).h)];
+                    
+                end
             end
         end
+        
+        windowCandidates = windowCandidates_new;
+        save_dir = strcat('windowCandidates_task2/',dataset,'/',name_sample,'.mat');
+        save(save_dir, 'windowCandidates');    
     end
 end
 
@@ -64,7 +78,9 @@ end
 % Description: template maching
 % Input: mask, windowCandidate
 % Output: None
-function template_maching(mask, windowCandidate)
+function is_valid = template_maching(mask, windowCandidate)
+% Control variable
+is_valid = 0;
 % Edges computed by Canny
 mask = edge(mask, 'Canny');      
 
@@ -102,6 +118,7 @@ pos_circular = compute_chanfer_distance(mask, t_circular, template_size);
 vdistance_c = [pos_mask(1), pos_mask(2); pos_circular(1), pos_circular(2)];      
 dist_circular = pdist(vdistance_c, 'euclidean');
 
+% Compute minimum position
 [dmin, pos] = min([dist_square, dist_triangle, dist_itriangle, dist_circular]);
 max_distance = 100;
 
@@ -117,28 +134,30 @@ if dmin < max_distance
         case 4
             disp('Found circle');
     end
+    is_valid = 1;
 else
     disp('No found templates');
 end
     
 % Plot location of detection
-figure('Name', 'mask: location of detection'), imshow(mask);
-hold on;
-plot(pos_mask(1), pos_mask(2), 'm.', 'MarkerSize', 30)
-plot(pos_square(1), pos_square(2), 'r.', 'MarkerSize', 30)
-plot(pos_triangle(1), pos_triangle(2), 'g.', 'MarkerSize', 30)
-plot(pos_itriangle(1), pos_itriangle(2), 'b.', 'MarkerSize', 30)
-plot(pos_circular(1), pos_circular(2), 'y.', 'MarkerSize', 30)
-pause();
-close;
+%figure('Name', 'mask: location of detection'), imshow(mask);
+%hold on;
+%plot(pos_mask(1), pos_mask(2), 'm.', 'MarkerSize', 10)
+%plot(pos_square(1), pos_square(2), 'r.', 'MarkerSize', 10)
+%plot(pos_triangle(1), pos_triangle(2), 'g.', 'MarkerSize', 10)
+%plot(pos_itriangle(1), pos_itriangle(2), 'b.', 'MarkerSize', 10)
+%plot(pos_circular(1), pos_circular(2), 'y.', 'MarkerSize', 10)
+%pause();
+%close;
     
 end
 
 % Function: compute_chanfer_distance
 % Description: compute chanfer distance
-% Input: T1
-% Output: None
+% Input: mask, template, template_size
+% Output: location
 function location = compute_chanfer_distance(mask, template, template_size)
+% Edges computed by canny on template to get contour
 template_2 = edge(template, 'Canny'); 
 
 % Computes the Euclidean distance transform of the image B
@@ -161,12 +180,12 @@ C(C2<thresold) = max(max(C));
 [ColumnMin, Y] = min(C);
 [~, X] = min(ColumnMin);
 location = [X, Y(X)];
-end
 
 %figure('Name', '2D convolution computing threshold'), ...
 %surf(double(C)), shading flat;
 %pause();
 %close;
+end
 
 % Function: show_description
 % Description: show description on screen
