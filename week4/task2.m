@@ -5,10 +5,13 @@ function task2()
 show_description_on_screen();
 
 % User menu to choose dataset 
-[dataset, valid_option] = choose_dataset;
+[dataset, valid_option_d] = choose_dataset;
+
+% User menu to choose alternative 
+[method, valid_option_m] = choose_method;
 
 % Check if dataset is correct
-if valid_option == 1
+if ((valid_option_d == 1) && (valid_option_m == 1))
     
     % Load improved masks
     sdir_masks = strcat('improved_masks/', dataset);
@@ -31,10 +34,18 @@ if valid_option == 1
         name_sample);
         disp(message);
         
-        % Load improved mask
-        directory = sprintf('%s/%s.png', sdir_masks, name_sample);
-        mask = logical(imread(directory));
-
+        % Load image depending on method selected
+        if strcmp(method, 'gray')
+            % Load original image
+            directory = sprintf('../datasets/train_set/%s_split/%s.jpg', dataset, name_sample);
+            mask = imread(directory); 
+            mask = rgb2gray(mask);
+        elseif strcmp(method, 'mask')
+            % Load improved mask
+            directory = sprintf('%s/%s.png', sdir_masks, name_sample);
+            mask = logical(imread(directory));
+        end
+       
         % Load windowCandidate
         directory = sprintf('%s/%s.mat', sdir_windows, name_sample);
         windowCandidates = load(directory);
@@ -47,13 +58,21 @@ if valid_option == 1
         [n, ~] = size(windowCandidates);
         num_window = 0;
         for jj=1:n
+            % Message to display on screen
             num_window = num_window+1;
             message = sprintf('Running template maching on window candidate: %d/%d', ...
             num_window, n);
             disp(message);
-            bounding_box = [windowCandidates(jj).x windowCandidates(jj).y 
+            
+            bounding_box = [windowCandidates(jj).x windowCandidates(jj).y ...
                             windowCandidates(jj).w windowCandidates(jj).h];
             if any(bounding_box)
+                
+                %figure, imshow(mask);
+                %rectangle('Position', bounding_box, 'EdgeColor','red', 'LineWidth', 2); 
+                %pause();
+                %close all;
+                
                 is_valid = template_maching(mask, windowCandidates(jj));  
                 
                 if is_valid
@@ -66,8 +85,9 @@ if valid_option == 1
         end
         
         windowCandidates = windowCandidates_new;
-        save_dir = strcat('windowCandidates_task2/',dataset,'/',name_sample,'.mat');
-        save(save_dir, 'windowCandidates');    
+        save_dir = strcat('windowCandidates_task2/windowCandidates_',method, ...
+        '_image/',dataset,'/',name_sample,'.mat');
+        save(save_dir, 'windowCandidates'); 
     end
 end
 
@@ -81,6 +101,7 @@ end
 function is_valid = template_maching(mask, windowCandidate)
 % Control variable
 is_valid = 0;
+
 % Edges computed by Canny
 mask = edge(mask, 'Canny');      
 
@@ -90,39 +111,41 @@ template_size = floor((windowCandidate.w + windowCandidate.h)/2);
 % Mask located by windowCandidate
 pos_mask = [windowCandidate.x+(windowCandidate.w/2), windowCandidate.y+(windowCandidate.h/2)];
 
-% Process square template
+%----------------------------- Process SQUARE template ---------------------------------------%
 disp('Processing square template matching...');
 t_square = get_square_template(template_size);             
-pos_square = compute_chanfer_distance(mask, t_square, template_size);
+pos_square = compute_chanfer_distance(mask, t_square);
 vdistance_s = [pos_mask(1), pos_mask(2); pos_square(1), pos_square(2)];      
 dist_square = pdist(vdistance_s, 'euclidean');
 
-% Process triangle template
+%----------------------------- Process TRIANGLE template -------------------------------------%
 disp('Processing triangle template matching...');
 t_triangle = get_triangle_template(template_size);         
-pos_triangle = compute_chanfer_distance(mask, t_triangle, template_size);
+pos_triangle = compute_chanfer_distance(mask, t_triangle);
 vdistance_t = [pos_mask(1), pos_mask(2); pos_triangle(1), pos_triangle(2)];      
 dist_triangle = pdist(vdistance_t, 'euclidean');
 
-% Process inverted triangle template
+%----------------------------- Process INVERTED TRIANGLE template ----------------------------%
 disp('Processing inverted triangle template matching...');
 t_itriangle = imrotate(t_triangle, 180);      
-pos_itriangle = compute_chanfer_distance(mask, t_itriangle, template_size);
+pos_itriangle = compute_chanfer_distance(mask, t_itriangle);
 vdistance_it = [pos_mask(1), pos_mask(2); pos_itriangle(1), pos_itriangle(2)];      
 dist_itriangle = pdist(vdistance_it, 'euclidean');
 
-% Process circular template
+%----------------------------- Process CIRCULAR template -------------------------------------%
 disp('Processing circular template matching...');
 t_circular = get_circular_template(template_size);      
-pos_circular = compute_chanfer_distance(mask, t_circular, template_size);
+pos_circular = compute_chanfer_distance(mask, t_circular);
 vdistance_c = [pos_mask(1), pos_mask(2); pos_circular(1), pos_circular(2)];      
 dist_circular = pdist(vdistance_c, 'euclidean');
 
 % Compute minimum position
 [dmin, pos] = min([dist_square, dist_triangle, dist_itriangle, dist_circular]);
-max_distance = 100;
+message = sprintf('Minimum distance: %d', dmin);
+disp(message);
 
 % Check distance between mask and template 
+max_distance = 1140;
 if dmin < max_distance
     switch pos
         case 1
@@ -139,24 +162,23 @@ else
     disp('No found templates');
 end
     
-% Plot location of detection
-%figure('Name', 'mask: location of detection'), imshow(mask);
-%hold on;
-%plot(pos_mask(1), pos_mask(2), 'm.', 'MarkerSize', 10)
-%plot(pos_square(1), pos_square(2), 'r.', 'MarkerSize', 10)
-%plot(pos_triangle(1), pos_triangle(2), 'g.', 'MarkerSize', 10)
-%plot(pos_itriangle(1), pos_itriangle(2), 'b.', 'MarkerSize', 10)
-%plot(pos_circular(1), pos_circular(2), 'y.', 'MarkerSize', 10)
-%pause();
-%close;
-    
+%tPlot location of detection
+% figure('Name', 'mask: location of detection'), imshow(mask);
+% hold on;
+% plot(pos_mask(1), pos_mask(2), 'm.', 'MarkerSize', 20)
+% plot(pos_square(1), pos_square(2), 'r.', 'MarkerSize', 20)
+% plot(pos_triangle(1), pos_triangle(2), 'g.', 'MarkerSize', 20)
+% plot(pos_itriangle(1), pos_itriangle(2), 'b.', 'MarkerSize', 20)
+% plot(pos_circular(1), pos_circular(2), 'y.', 'MarkerSize', 20)
+% pause();
+% close;
 end
 
 % Function: compute_chanfer_distance
 % Description: compute chanfer distance
 % Input: mask, template, template_size
 % Output: location
-function location = compute_chanfer_distance(mask, template, template_size)
+function location = compute_chanfer_distance(mask, template)
 % Edges computed by canny on template to get contour
 template_2 = edge(template, 'Canny'); 
 
@@ -168,23 +190,39 @@ DT = bwdist(mask, 'Euclidean');
 % 2D convolution of the template and distance image
 C = conv2(DT, double(template_2), 'valid');
 
-% Perform another convolution with a solid template to find location with displacement of
-% matching position produced by false positives in background
-C2 = conv2(DT, double(template),'valid');
-
-% Compute threshold on second 2D convolution
-thresold = (2 * template_size + 1)^2 * 3;
-C(C2<thresold) = max(max(C));
-
 % Calculate location of match position
 [ColumnMin, Y] = min(C);
 [~, X] = min(ColumnMin);
 location = [X, Y(X)];
 
-%figure('Name', '2D convolution computing threshold'), ...
-%surf(double(C)), shading flat;
-%pause();
-%close;
+figure('Name', '2D convolution computing threshold'), ...
+surf(double(C)), shading flat;
+pause();
+close;
+end
+
+% Function: choose_method
+% Description: user menu to choose method
+% Input: None
+% Output: method, valid_option
+function [method, valid_option] = choose_method()
+valid_option = 0;
+disp('Alternative 1: distance transform and chamfer distance: original gray level image [gray]');
+disp('Alternative 2: distance transform and chamfer distance: contours from binary mask [mask]');
+prompt = 'Select method to use [gray/mask] : ';
+method = input(prompt,'s');
+switch method
+    case 'gray'
+        disp('Distance transform and chamfer distance (original gray level image) selected');
+        method = 'gray';
+        valid_option = 1;
+    case 'mask'
+        disp('Distance transform and chamfer distance (contours from binary mask) selected');
+        method = 'mask';
+        valid_option = 1;
+    otherwise
+        disp('Unknow split');
+end  
 end
 
 % Function: show_description

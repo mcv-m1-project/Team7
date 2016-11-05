@@ -70,7 +70,7 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
             if(bb(jj,1) ~= 0 && bb(jj,2) ~= 0 && bb(jj,3) ~= 0 && ...
             bb(jj,4) ~= 0)
                 detections = detections + 1;
-                rectangle('Position', bb(jj,:), 'EdgeColor','y', 'LineWidth',2); 
+                %rectangle('Position', bb(jj,:), 'EdgeColor','y', 'LineWidth',2); 
                 % rectangle('Position', bb_gt, 'EdgeColor','g', 'LineWidth',2);
                 
                 if strcmp(dataset, 'test') == 0
@@ -116,23 +116,27 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
             else
                 disp('Non detections');
             end       
+            
+            % Load original image
+            directory = sprintf('../datasets/train_set/%s_split/mask/mask.%s.png', dataset, name_sample);
+            mask_gt = logical(imread(directory)); 
 
             % Calculate metrics of image_dections and image
-            %[TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
-            %[R, P, AO, FD, F1] = get_metrics(TP, TN, FP, FN);
-            %results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
-            %FP, FN, 0); 
+            [TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
+            [R, P, AO, FD, F1] = get_metrics(TP, TN, FP, FN);
+            results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
+            FP, FN, 0); 
         end
         % pause();
         % close all; 
     end
     
     if strcmp(dataset, 'test') == 0
-        %final_results.(method) = get_results(results.(method),final_results.(method));
-        %results = final_results.(method);
-        %sdir = sprintf('matlab_files/evaluation/results_%s_%s.mat', method, dataset);
-        %save(sdir, 'results');
-        %fprintf('Save %s: done', sdir);
+        final_results.(method) = get_results(results.(method),final_results.(method));
+        results = final_results.(method);
+        sdir = sprintf('matlab_files/evaluation/results_%s_%s.mat', method, dataset);
+        save(sdir, 'results');
+        fprintf('Save %s: done', sdir);
     end
 end
 disp('task4(): done');
@@ -327,14 +331,14 @@ end
 % Input: results, final_results
 % Output: final_results
 function final_results = get_results(results, final_results)
-final_results.Precision = median(results.Precision);
-final_results.Accuracy = median(results.Accuracy);
-final_results.Recall = median(results.Recall);
-final_results.F1 = median(results.F1);
-final_results.TP = median(results.TP);
-final_results.FP = median(results.FP);
-final_results.FN = median(results.FN);
-final_results.Time_per_frame = median(results.Time_per_frame);
+final_results.Precision = mean(results.Precision);
+final_results.Accuracy = mean(results.Accuracy);
+final_results.Recall = mean(results.Recall);
+final_results.F1 = mean(results.F1);
+final_results.TP = mean(results.TP);
+final_results.FP = mean(results.FP);
+final_results.FN = mean(results.FN);
+final_results.Time_per_frame = mean(results.Time_per_frame);
 end
 
 % Function: save_metrics

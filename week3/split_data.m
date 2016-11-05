@@ -1,6 +1,6 @@
 function split_data(data)
     % Load mask folder
-    samples = dir('../datasets/test_set/'); 
+    samples = dir('../datasets/train_set/train_split'); 
     samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
     total_images = uint8(length(samples));
 

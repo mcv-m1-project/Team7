@@ -15,7 +15,7 @@ if valid_option == 1
     num_image = 0;
     
     % Load window candidates
-    sdir_windows = strcat('windowCandidates_task2/', dataset); 
+    sdir_windows = strcat('windowCandidates_dis2/', dataset); 
     disp('Starting image processing...');
     for ii=1:total_images  
         % Load improved mask
@@ -29,6 +29,18 @@ if valid_option == 1
         windowCandidates = load(directory);
         windowCandidates = windowCandidates.windowCandidates;
 
+        % Load ground truth window
+        %directory = sprintf('../datasets/train_set/%s_split/gt/gt.%s.txt', ...
+        %dataset, name_sample);
+        %file = fileread(directory);
+        %lines = regexp(file, '\n', 'split');
+        %text = regexp(lines, ' ', 'split');
+        %tly = str2double(text{1}{1});              
+        %tlx = str2double(text{1}{2});
+        %bry = str2double(text{1}{3});
+        %brx = str2double(text{1}{4});   
+        %windowCandidates = struct('x', tlx, 'y', tly, 'w',  abs(tlx-brx), 'h', abs(tly-bry));
+        
         [n, ~] = size(windowCandidates);
         for jj=1:n
             bounding_box = [windowCandidates(jj).x windowCandidates(jj).y ...
