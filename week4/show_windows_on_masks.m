@@ -15,7 +15,7 @@ if valid_option == 1
     num_image = 0;
     
     % Load window candidates
-    sdir_windows = strcat('windowCandidates_dis2/', dataset); 
+    sdir_windows = strcat('windowCandidates_task2/windowCandidates_gray_image/', dataset); 
     disp('Starting image processing...');
     for ii=1:total_images  
         % Load improved mask

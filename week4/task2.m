@@ -14,7 +14,7 @@ show_description_on_screen();
 if ((valid_option_d == 1) && (valid_option_m == 1))
     
     % Load improved masks
-    sdir_masks = strcat('improved_masks/', dataset);
+    sdir_masks = strcat('improved_masks_old/', dataset);
     samples = dir(sdir_masks); 
     samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
     total_images = uint8(length(samples));
@@ -36,14 +36,21 @@ if ((valid_option_d == 1) && (valid_option_m == 1))
         
         % Load image depending on method selected
         if strcmp(method, 'gray')
-            % Load original image
-            directory = sprintf('../datasets/train_set/%s_split/%s.jpg', dataset, name_sample);
-            mask = imread(directory); 
-            mask = rgb2gray(mask);
+            if strcmp(dataset, 'test')
+                % Load original image
+                directory = sprintf('../datasets/test_set/%s.jpg', name_sample);
+                mask = imread(directory); 
+                mask = rgb2gray(mask);
+            else
+                 % Load original image
+                directory = sprintf('../datasets/train_set/%s_split/%s.jpg', dataset, name_sample);
+                mask = imread(directory); 
+                mask = rgb2gray(mask);
+            end
         elseif strcmp(method, 'mask')
-            % Load improved mask
-            directory = sprintf('%s/%s.png', sdir_masks, name_sample);
-            mask = logical(imread(directory));
+                % Load improved mask
+                directory = sprintf('%s/%s.png', sdir_masks, name_sample);
+                mask = logical(imread(directory));
         end
        
         % Load windowCandidate
@@ -114,28 +121,28 @@ pos_mask = [windowCandidate.x+(windowCandidate.w/2), windowCandidate.y+(windowCa
 %----------------------------- Process SQUARE template ---------------------------------------%
 disp('Processing square template matching...');
 t_square = get_square_template(template_size);             
-pos_square = compute_chanfer_distance(mask, t_square);
+pos_square = compute_chamfer_distance(mask, t_square);
 vdistance_s = [pos_mask(1), pos_mask(2); pos_square(1), pos_square(2)];      
 dist_square = pdist(vdistance_s, 'euclidean');
 
 %----------------------------- Process TRIANGLE template -------------------------------------%
 disp('Processing triangle template matching...');
 t_triangle = get_triangle_template(template_size);         
-pos_triangle = compute_chanfer_distance(mask, t_triangle);
+pos_triangle = compute_chamfer_distance(mask, t_triangle);
 vdistance_t = [pos_mask(1), pos_mask(2); pos_triangle(1), pos_triangle(2)];      
 dist_triangle = pdist(vdistance_t, 'euclidean');
 
 %----------------------------- Process INVERTED TRIANGLE template ----------------------------%
 disp('Processing inverted triangle template matching...');
 t_itriangle = imrotate(t_triangle, 180);      
-pos_itriangle = compute_chanfer_distance(mask, t_itriangle);
+pos_itriangle = compute_chamfer_distance(mask, t_itriangle);
 vdistance_it = [pos_mask(1), pos_mask(2); pos_itriangle(1), pos_itriangle(2)];      
 dist_itriangle = pdist(vdistance_it, 'euclidean');
 
 %----------------------------- Process CIRCULAR template -------------------------------------%
 disp('Processing circular template matching...');
 t_circular = get_circular_template(template_size);      
-pos_circular = compute_chanfer_distance(mask, t_circular);
+pos_circular = compute_chamfer_distance(mask, t_circular);
 vdistance_c = [pos_mask(1), pos_mask(2); pos_circular(1), pos_circular(2)];      
 dist_circular = pdist(vdistance_c, 'euclidean');
 
@@ -178,7 +185,7 @@ end
 % Description: compute chanfer distance
 % Input: mask, template, template_size
 % Output: location
-function location = compute_chanfer_distance(mask, template)
+function location = compute_chamfer_distance(mask, template)
 % Edges computed by canny on template to get contour
 template_2 = edge(template, 'Canny'); 
 
@@ -195,10 +202,10 @@ C = conv2(DT, double(template_2), 'valid');
 [~, X] = min(ColumnMin);
 location = [X, Y(X)];
 
-figure('Name', '2D convolution computing threshold'), ...
-surf(double(C)), shading flat;
-pause();
-close;
+% figure('Name', '2D convolution computing threshold'), ...
+% surf(double(C)), shading flat;
+% pause();
+% close;
 end
 
 % Function: choose_method
