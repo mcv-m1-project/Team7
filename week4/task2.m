@@ -10,6 +10,9 @@ show_description_on_screen();
 % User menu to choose alternative 
 [method, valid_option_m] = choose_method;
 
+time_per_frame = [];
+time = 0;
+
 % Check if dataset is correct
 if ((valid_option_d == 1) && (valid_option_m == 1))
     
@@ -80,7 +83,9 @@ if ((valid_option_d == 1) && (valid_option_m == 1))
                 %pause();
                 %close all;
                 
+                tic
                 is_valid = template_maching(mask, windowCandidates(jj));  
+                time = time + toc;
                 
                 if is_valid
                    windowCandidates_new = [windowCandidates_new; ...
@@ -90,11 +95,19 @@ if ((valid_option_d == 1) && (valid_option_m == 1))
                 end
             end
         end
-        
         windowCandidates = windowCandidates_new;
         save_dir = strcat('windowCandidates_task2/windowCandidates_',method, ...
         '_image/',dataset,'/',name_sample,'.mat');
         save(save_dir, 'windowCandidates'); 
+        
+        time = time / n;
+        time_per_frame = [time_per_frame, time];
+        time = 0;
+    end
+    if strcmp(dataset, 'validation')
+        time = mean(time_per_frame);
+        message = sprintf('Mean time per frame: %d', time);
+        disp(message);
     end
 end
 

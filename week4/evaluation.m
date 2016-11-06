@@ -36,7 +36,8 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
     total_images = uint8(length(samples));
 
     % Load partial windowCandidates directory
-    sdir_windows = strcat('windowCandidates_task2/windowCandidates_',method,'_image/',dataset);
+    %sdir_windows = strcat('windowCandidates_task2/windowCandidates_',method,'_image/',dataset);
+    sdir_windows = strcat('windowCandidates_validation_task1');
     
     disp('Starting image processing...');
     for ii=1:total_images     
@@ -58,7 +59,7 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
         % Iterate all detections on improved masks
         [total_detections, ~] = size(windowCandidates);
         
-        %figure, imshow(image);
+        figure, imshow(image);
         for jj=1:total_detections
             % Check if its a true detection
             bounding_box = [windowCandidates(jj).x, windowCandidates(jj).y,...
@@ -71,11 +72,11 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
                 y2 = max(floor(bounding_box(1)+bounding_box(3)), 1);
                 image_detections(x1:x2, y1:y2) = image(x1:x2, y1:y2);
                 
-                %rectangle('Position', bounding_box, 'EdgeColor','y', 'LineWidth',2); 
+                rectangle('Position', bounding_box, 'EdgeColor','y', 'LineWidth',2); 
             end                   
         end
-        %pause();
-        %close all;
+        pause();
+        close all;
         
         if strcmp(dataset, 'test')
             simage = sprintf('improved_%s/%s.png', method, name_sample);
@@ -170,22 +171,6 @@ switch method
     otherwise
         disp('Unknow split');
 end  
-end
-
-% Function: test_image
-% Description: generate image with numbers sorted
-% Input: n, m
-% Output: image
-function image = test_image(n, m)
-image = zeros(n, m);
-min = 1;
-max = m;
-jump = m;
-for i=1:n
-    image(i,:) = (min:max);
-    min = min + jump;
-    max = max + jump;
-end
 end
 
 % Function: get_parameters
