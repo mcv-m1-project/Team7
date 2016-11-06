@@ -268,9 +268,9 @@ model_D=imread('model_D_color.png');
 model_E=imread('model_E_color.png');
 model_F=imread('model_F_color.png');
 
-%bbox_dir='windowCandidates/test/';%Result from window
-%images_dir='datasets/test_set/';%Original image
-%mask_dir='improved_masks/test/';%From color component segmentation
+bbox_dir='windowCandidates/test/';%Result from window
+images_dir='datasets/test_set/';%Original image
+mask_dir='improved_masks/test/';%From color component segmentation
 
 %bbox_dir='windowCandidates/validation/';%Result from window
 %images_dir='datasets/train_set/validation_split/';%Original image
