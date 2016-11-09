@@ -268,13 +268,13 @@ model_D=imread('model_D_color.png');
 model_E=imread('model_E_color.png');
 model_F=imread('model_F_color.png');
 
-bbox_dir='windowCandidates/test/';%Result from window
-images_dir='datasets/test_set/';%Original image
-mask_dir='improved_masks/test/';%From color component segmentation
+%bbox_dir='windowCandidates/test/';%Result from window
+%images_dir='datasets/test_set/';%Original image
+%mask_dir='improved_masks/test/';%From color component segmentation
 
-%bbox_dir='windowCandidates/validation/';%Result from window
-%images_dir='datasets/train_set/validation_split/';%Original image
-%mask_dir='improved_masks/validation/';%From color component segmentation
+bbox_dir='windowCandidates/validation/';%Result from window
+images_dir='datasets/train_set/validation_split/';%Original image
+mask_dir='improved_masks/validation/';%From color component segmentation
 
 time_per_frame = [];
 time = 0;
@@ -389,6 +389,7 @@ for jj=1:length(list)
     save(sdir, 'windowCandidates');
     
 end
+time_per_frame = time_per_frame(time_per_frame~=0);
 time = mean(time_per_frame);
 message = sprintf('Mean time per frame: %d', time);
 disp(message);

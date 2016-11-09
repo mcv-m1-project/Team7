@@ -90,6 +90,10 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
                 y2 = max(floor(bb(jj,1)+bb(jj,3)), 1);
                 image_detections(x1:x2, y1:y2) = image(x1:x2, y1:y2);
                 
+                %imshow(image_detections);
+                %pause();
+                %close all;
+                
             end                   
         end
         
@@ -118,14 +122,20 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
             end       
             
             % Load original image
-            directory = sprintf('../datasets/train_set/%s_split/mask/mask.%s.png', dataset, name_sample);
-            mask_gt = logical(imread(directory)); 
-
+            message = sprintf('Images processed: %d/%d. Image name: %s', num_image, total_images, ...
+            name_sample);
+            disp(message);
+        
+            if strcmp(name_sample ,'01.001481')
+                simage = sprintf('%s.png', name_sample);
+                imwrite(image_detections, simage,'png');
+            end
+            
             % Calculate metrics of image_dections and image
-            [TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
-            [R, P, AO, FD, F1] = get_metrics(TP, TN, FP, FN);
-            results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
-            FP, FN, 0); 
+            %[TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
+            %[R, P, AO, FD, F1] = get_metrics(TP, TN, FP, FN);
+            %results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
+            %FP, FN, 0); 
         end
         % pause();
         % close all; 
