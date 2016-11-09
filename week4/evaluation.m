@@ -36,8 +36,7 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
     total_images = uint8(length(samples));
 
     % Load partial windowCandidates directory
-    %sdir_windows = strcat('windowCandidates_task2/windowCandidates_',method,'_image/',dataset);
-    sdir_windows = strcat('windowCandidates_test_task1');
+    sdir_windows = strcat('windowCandidates/',method,'_image/',dataset);
     
     disp('Starting image processing...');
     for ii=1:total_images     
@@ -77,22 +76,20 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
         end
         %pause();
         %close all;
-        
-        if strcmp(dataset, 'test')
-            simage = sprintf('improved_%s/%s.png', method, name_sample);
-            imwrite(image_detections, simage,'png');
-        else
-            % Load mask
-            sdir_mask = strcat('../datasets/train_set/',dataset,'_split/mask/mask.',name_sample,'.png');
-            mask_gt = logical(imread(sdir_mask));
-        
-            % Calculate metrics of image_dections and image
-            [TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
-            [R, P, AO, FD, F1] = get_metrics(TP, TN, FP, FN);
-            results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
-            FP, FN, 0); 
-        end
-            
+
+        simage = sprintf('improved_%s/%s/%s.png', method, dataset, name_sample);
+        imwrite(image_detections, simage,'png');
+       
+        % Load mask
+        % sdir_mask = strcat('../datasets/train_set/',dataset,'_split/mask/mask.',name_sample,'.png');
+        % mask_gt = logical(imread(sdir_mask));
+
+        % Calculate metrics of image_dections and image
+        % [TP, TN, FP, FN, ACC] = get_parameters(image_detections, mask_gt);
+        % [R, P, AO, FD, F1] = get_metrics(TP, TN, FP, FN);
+        % results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
+        % FP, FN, 0); 
+
         % Message to display on matlab
         num_image = num_image + 1;
         message = sprintf('Images processed: %d/%d. Image name: %s', ...

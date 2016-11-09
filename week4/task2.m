@@ -96,8 +96,7 @@ if ((valid_option_d == 1) && (valid_option_m == 1))
             end
         end
         windowCandidates = windowCandidates_new;
-        save_dir = strcat('windowCandidates_task2/windowCandidates_',method, ...
-        '_image/',dataset,'/',name_sample,'.mat');
+        save_dir = strcat('windowCandidates/',method,'_image/',dataset,'/',name_sample,'.mat');
         save(save_dir, 'windowCandidates'); 
         
         time = time / n;
