@@ -36,11 +36,9 @@ if valid_dataset
         % Load original image
         directory = sprintf('%s/%s.jpg', sdir, name_sample);
         image = imread(directory);         
-        
-        % Define mean shift bandwidth
-        ms_bandwidth = 0.1;                  
+                       
         % Compute mean shift (color)
-        [image_ms, ~]  = Ms(image, ms_bandwidth);    
+        [image_ms, ~]  = Ms(image, 0.2);    
         
         % Save mean shift image on dataset directory
         sdir_ms = sprintf('mean_shift_images/%s/%s.jpg', dataset, name_sample); 

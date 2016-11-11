@@ -27,14 +27,18 @@ if valid_dataset
  
         % Load mean shift image
         directory = sprintf('%s/%s.jpg', sdir_masks, name_sample);
-        image_ms = imread(directory); 
+        mask = imread(directory);   
         
-        % Transform mean shift image to binary image
-        level = graythresh(image_ms);
-        mask = im2bw(image_ms, level);
-               
-        se = getnhood(strel('disk', 5));
+        % Compute Otsu to transform image into black and white (binary)
+        threshold = graythresh(mask);
+        mask = im2bw(mask, threshold);
+        
+        % Apply filter to reduce noise
+        se = getnhood(strel('disk', 7));
         mask = imopen(mask, se);
+        
+        % Performs a flood-fill operation on background pixels 
+        mask = imfill(mask,'holes');
         
         % Get features of regions detected
         features  = regionprops(mask, 'centroid', 'BoundingBox');
@@ -54,16 +58,18 @@ if valid_dataset
             windowCandidates = struct('x', bounding_box(1), 'y', bounding_box(2), ...
                                       'w', bounding_box(3), 'h', bounding_box(4));
                    
-            plot(features(jj).Centroid(1), features(jj).Centroid(2), 'green.', 'MarkerSize', 20);
-            rectangle('Position', features(jj).BoundingBox, 'EdgeColor','yellow', 'LineWidth', 2); 
+            % plot(features(jj).Centroid(1), features(jj).Centroid(2), 'green.', 'MarkerSize', 20);
+            % rectangle('Position', features(jj).BoundingBox, 'EdgeColor','yellow', 'LineWidth', 2); 
                                   
             % Hough for detect squares and triangles 
-            disp('Computing hough for squares and triangles...');
+            fprintf('Computing hough for squares and triangles... ');
             is_square_triangle = hough_for_squares_triangles(mask, windowCandidates);
+            fprintf('done\n');
             
             % Hough for detect circles 
-            disp('Computing hough for circles...');
+            fprintf('Computing hough for circles... ');
             is_circle = hough_for_circles(mask, windowCandidates);
+            fprintf('done\n');
             
             % If detected any shape on window, add detections as signal
             if is_circle || is_square_triangle 
@@ -76,92 +82,12 @@ if valid_dataset
                 simage = sprintf('improved_task2/%s/%s.png', dataset, name_sample);
                 imwrite(mask_detections, simage,'png');
             end
-        end      
+        end 
+        pause();
+        close all;
     end
 end
 disp('task2(): done');
-end
-
-% Function: hough_for_squares_triangles
-% Description: compute hough to detect squares and triangles on binary mask
-% Input: mask,  windowCandidates
-% Output: is_valid
-function is_valid = hough_for_squares_triangles(mask, windowCandidate)
-% Variable to detect squares or triangles
-is_valid = 0;
-
-% Compute standard hough transform
-[H, ~, ~] = hough(mask);
-%[H, THETA, RHO] = hough(mask);
-% imshow(H, [], 'XData', THETA, 'YData', RHO, 'InitialMagnification', 'fit');
-% xlabel('\theta'), ylabel('\rho');
-% axis on, axis normal, hold on;
-
-nmax = max(max(H));
-data = zeros(1, nmax);
-for ii = 1:nmax
-    data(ii) = sum(sum(H == ii));
-end
-
-[maxval,maxind] = max(data);
-medval = median(data);
-[p] = polyfit(1:maxind-5,data(1:maxind-5),2);
-
-if maxval<3*medval
-    disp('Found triangle');
-    is_valid = 1;
-elseif  p(3)>(windowCandidate.w-80)
-    disp('Found square');
-    is_valid = 1;
-end
-end
-
-% Function: hough_for_circles
-% Description: compute hough to detect circles on binary mask
-% Input: mask,  windowCandidates
-% Output: is_valid
-function is_valid = hough_for_circles(mask, windowCandidates)
-% Variable to detect circles
-is_valid = 0;
-
-% Define 5-by-5 filter to smooth out the small scale irregularities
-fltr4img = [1 1 1 1 1; 1 2 2 2 1; 1 2 4 2 1; 1 2 2 2 1; 1 1 1 1 1];
-fltr4img = fltr4img / sum(fltr4img(:));
-imgfltrd = filter2( fltr4img , mask );
-
-% Galculate center of cercle
-center_x = windowCandidates.x+(windowCandidates.w/2);
-center_y = windowCandidates.y+(windowCandidates.h/2);
-center = [center_x center_y];
-
-% Get radius of cercle
-radius = floor(windowCandidates.w/2);
-Rmin = radius - 10;
-Rmax = radius + 10;
-radrange = [Rmin Rmax];
-
-% Define inputs to function CircularHough_Grd.
-% Based on example #3 provided on file CircularHough_Grd.m
-fltr4LM_R = 8;
-multirad = 10;
-fltr4accum = 0.7;
-
-% Compute circular hough
-[~, circen, ~] = CircularHough_Grd(imgfltrd, radrange, ...
-fltr4LM_R, multirad, fltr4accum);
-
-% Check if exists any location that match with center of window candidate.
-% In this case, it means that within of window candidate there are one circle.
-[n, ~] = size(circen);
-for zz=1:n
-    locations = [center(1), center(2); circen(zz,1),circen(zz,2)];
-    dist = pdist(locations, 'euclidean');  
-    if dist <= 1 
-        message = sprintf('Found circle. Distance: %d', dist);
-        disp(message);
-        is_valid = 1;
-    end     
-end
 end
 
 % Function: choose_dataset
