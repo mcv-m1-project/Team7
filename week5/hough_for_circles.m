@@ -32,16 +32,25 @@ fltr4accum = 0.7;
 [~, circen, ~] = CircularHough_Grd(imgfltrd, radrange, ...
 fltr4LM_R, multirad, fltr4accum);
 
+% figure, imshow(mask), hold on;
+% plot(circen(:,1), circen(:,2), 'r+');
+% for k = 1 : size(circen, 1),
+    % DrawCircle(circen(k,1), circen(k,2), cirrad(k), 32, 'b-');
+% end
+
 % Check if exists any location that match with center of window candidate.
 % In this case, it means that within of window candidate there are one circle.
 [n, ~] = size(circen);
 for zz=1:n
     locations = [center(1), center(2); circen(zz,1),circen(zz,2)];
     dist = pdist(locations, 'euclidean');  
-    if dist <= 1 
-        %message = sprintf('Found circle. Distance: %d', dist);
-        %disp(message);
+    if dist <= 5        
+        % message = sprintf('Found circle. Distance: %d', dist);
+        % disp(message);
+        % plot( circen(zz,1),  circen(zz,2), 'g.', 'MarkerSize', 20)
         is_valid = 1;
     end     
 end
+% pause();
+% close all;
 end

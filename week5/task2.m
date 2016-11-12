@@ -1,6 +1,9 @@
 %% Task 2 -- Improve segmentation
 
 function task2()
+% Show description on screen
+show_description_on_screen();
+
 % User menu to choose dataset 
 [dataset, valid_dataset] = choose_dataset;
 
@@ -47,9 +50,13 @@ if valid_dataset
         [sn, sm] = size(mask);
         mask_detections = zeros(sn, sm);
         
+        % Counter of shape detections
+        total_circles = 0;
+        total_square_triangles = 0;
+        
         % Compute each window candidate
         [n, ~] = size(features);
-        figure, imshow(mask), hold on;
+        % figure, imshow(mask), hold on;
         for jj=1:n
             msg = sprintf('Computing hough detections. Window candidate: %d/%d', jj, n);
             disp(msg);    
@@ -59,16 +66,21 @@ if valid_dataset
                                       'w', bounding_box(3), 'h', bounding_box(4));
                    
             % plot(features(jj).Centroid(1), features(jj).Centroid(2), 'green.', 'MarkerSize', 20);
-            % rectangle('Position', features(jj).BoundingBox, 'EdgeColor','yellow', 'LineWidth', 2); 
-                                  
+            % rectangle('Position', features(jj).BoundingBox, 'EdgeColor','yellow', 'LineWidth', 2);                 
+       
             % Hough for detect squares and triangles 
             fprintf('Computing hough for squares and triangles... ');
-            is_square_triangle = hough_for_squares_triangles(mask, windowCandidates);
+            is_square_triangle = detect_square_triangle(mask, windowCandidates);
+            total_square_triangles = total_square_triangles + is_square_triangle;
             fprintf('done\n');
             
             % Hough for detect circles 
-            fprintf('Computing hough for circles... ');
+            fprintf('Computing hough for circles... ');     
+            % gray_image = rgb2gray(original_image);  % Tranform image into gray scale
+            % [Gx, Gy] = imgradientxy(gray_image);    % Find the directional gradients
+            % [~, Gdir] = imgradient(Gx, Gy);         % Find the gradient magnitude and direction      
             is_circle = hough_for_circles(mask, windowCandidates);
+            total_circles = total_circles + is_circle;
             fprintf('done\n');
             
             % If detected any shape on window, add detections as signal
@@ -79,15 +91,33 @@ if valid_dataset
                 y2 = max(floor(bounding_box(1)+bounding_box(3)), 1);
                 mask_detections(x1:x2, y1:y2) = mask(x1:x2, y1:y2);
                 
-                simage = sprintf('improved_task2/%s/%s.png', dataset, name_sample);
-                imwrite(mask_detections, simage,'png');
+                fprintf('Squares or/and triangles detected: %d\n', total_square_triangles);
+                fprintf('Circles detected: %d\n', total_circles);                 
+            else
+                disp('No found detections');
             end
-        end 
-        pause();
-        close all;
+        end
+        simage = sprintf('improved_task2/%s/%s.png', dataset, name_sample);
+        imwrite(mask_detections, simage, 'png');
+        % pause();
+        % close all;
     end
 end
 disp('task2(): done');
+end
+
+% Function: show_description
+% Description: show description on screen
+% Input: None
+% Output: None
+function show_description_on_screen()
+disp('----------------------------- TASK 2 DESCRIPTION -----------------------------');
+disp('Replace the color segmentation from previous blocks with other segmentation ');
+disp('algorithm (UCM, Mean-shift,...).');
+disp('Consider the bounding box of each region as a window candidate and use color');
+disp('or geometric features to remove regions not likely to contain traffic signs');
+disp('------------------------------------------------------------------------------');
+fprintf('\n');
 end
 
 % Function: choose_dataset

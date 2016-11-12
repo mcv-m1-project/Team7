@@ -10,9 +10,16 @@ show_description_on_screen();
 % Check if dataset is correct
 if valid_dataset
     
-    % Load improved masks
-    sdir_masks = strcat('improved_masks/', dataset);
-    samples = dir(sdir_masks); 
+    % Load improved masks directory
+    sdir_improved_masks = strcat('improved_masks/', dataset);
+    
+    % Load original images directory
+    if strcmp(dataset, 'test')
+        sdir_images = sprintf('../datasets/test_set/');
+    else
+        sdir_images = sprintf('../datasets/train_set/%s_split/', dataset);
+    end
+    samples = dir(sdir_images); 
     samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
     total_images = uint8(length(samples));
     num_image = 0;
@@ -31,18 +38,26 @@ if valid_dataset
         total_images, name_sample);
         disp(message);
  
+        % Load original image
+        % directory = sprintf('%s/%s.jpg', sdir_images, name_sample);
+        % original_image = imread(directory);
+        
         % Load improved mask
-        directory = sprintf('%s/%s.png', sdir_masks, name_sample);
-        mask = imread(directory); 
-       
+        directory = sprintf('%s/%s.png', sdir_improved_masks, name_sample);
+        improved_mask = imread(directory);
+        
         % Load window candidate
         directory = sprintf('%s/%s.mat', sdir_windows, name_sample);
         windowCandidates = load(directory);
         windowCandidates = windowCandidates.windowCandidates;
         
         % Define new mask of match detections
-        [sn, sm] = size(mask);
+        [sn, sm, ~] = size(improved_mask);
         mask_detections = zeros(sn, sm);
+        
+        % Counter of shape detections
+        total_circles = 0;
+        total_square_triangles = 0;
         
         % Compute each window candidate
         [n, ~] = size(windowCandidates);
@@ -51,36 +66,44 @@ if valid_dataset
             disp(msg);    
             bounding_box = [windowCandidates(jj).x windowCandidates(jj).y ...
                             windowCandidates(jj).w windowCandidates(jj).h];
-            % if any(bounding_box)
-                % rectangle('Position', bounding_box, 'EdgeColor','green', 'LineWidth', 2);                 
-            % end
                    
             % Hough for detect squares and triangles 
-            disp('Computing hough for squares and triangles...');
-            is_square_triangle = hough_for_squares_triangles(mask, windowCandidates(jj));
+            fprintf('Computing hough for squares and triangles... ');
+            is_square_triangle = detect_square_triangle(improved_mask, windowCandidates(jj));
+            total_square_triangles = total_square_triangles + is_square_triangle;
+            fprintf('done\n');
             
             % Hough for detect circles 
-            disp('Computing hough for circles...');
-            is_circle = hough_for_circles(mask, windowCandidates(jj));
-            
+            fprintf('Computing hough for circles... ');     
+            % gray_image = rgb2gray(original_image);  % Tranform image into gray scale
+            % [Gx, Gy] = imgradientxy(gray_image);    % Find the directional gradients
+            % [~, Gdir] = imgradient(Gx, Gy);         % Find the gradient magnitude and direction      
+            is_circle = hough_for_circles(improved_mask, windowCandidates(jj));
+            total_circles = total_circles + is_circle;
+            fprintf('done\n');
+
             % If detected any shape on window, add detections as signal
             if is_circle || is_square_triangle 
                 x1 = max(floor(bounding_box(2)), 1);
                 x2 = max(floor(bounding_box(2)+bounding_box(4)), 1);
                 y1 = max(floor(bounding_box(1)), 1);
                 y2 = max(floor(bounding_box(1)+bounding_box(3)), 1);
-                mask_detections(x1:x2, y1:y2) = mask(x1:x2, y1:y2);
+                mask_detections(x1:x2, y1:y2) = improved_mask(x1:x2, y1:y2);
                 
-                simage = sprintf('improved_task1/%s/%s.png', dataset, name_sample);
-                imwrite(mask_detections, simage,'png');
+                fprintf('Squares or/and triangles detected: %d\n', total_square_triangles);
+                fprintf('Circles detected: %d\n', total_circles);                 
+            else
+                disp('No found detections');
             end
         end
+        simage = sprintf('improved_task1/%s/%s.png', dataset, name_sample);
+        imwrite(mask_detections, simage, 'png');
         
         % figure();
-        % set(gcf,'name','RGB channels','numbertitle','off','Position', ...
+        % set(gcf,'name','Improved masks','numbertitle','off','Position', ...
         % [150, 150, 1300, 400]);
-        % subplot(1,2,1), imshow(mask), title('mask');
-        % subplot(1,2,2), imshow(mask_detections), title('mask_detections');
+        % subplot(1,2,1), imshow(improved_mask), title('old improved mask');
+        % subplot(1,2,2), imshow(mask_detections), title('new improved mask');
         % pause();
         % close all;
     end
