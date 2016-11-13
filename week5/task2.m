@@ -30,11 +30,11 @@ if valid_dataset
  
         % Load mean shift image
         directory = sprintf('%s/%s.jpg', sdir_masks, name_sample);
-        mask = imread(directory);   
+        image_ms = imread(directory);   
         
         % Compute Otsu to transform image into black and white (binary)
-        threshold = graythresh(mask);
-        mask = im2bw(mask, threshold);
+        threshold = graythresh(image_ms);
+        mask = im2bw(image_ms, threshold-0.10);
         
         % Apply filter to reduce noise
         se = getnhood(strel('disk', 7));
@@ -54,9 +54,12 @@ if valid_dataset
         total_circles = 0;
         total_square_triangles = 0;
         
+        % List to save new window candidates
+        windowCandidates_new = [];
+        
         % Compute each window candidate
         [n, ~] = size(features);
-        % figure, imshow(mask), hold on;
+        % figure, imshow(image_ms), hold on;
         for jj=1:n
             msg = sprintf('Computing hough detections. Window candidate: %d/%d', jj, n);
             disp(msg);    
@@ -65,9 +68,11 @@ if valid_dataset
             windowCandidates = struct('x', bounding_box(1), 'y', bounding_box(2), ...
                                       'w', bounding_box(3), 'h', bounding_box(4));
                    
-            % plot(features(jj).Centroid(1), features(jj).Centroid(2), 'green.', 'MarkerSize', 20);
-            % rectangle('Position', features(jj).BoundingBox, 'EdgeColor','yellow', 'LineWidth', 2);                 
-       
+            % if windowCandidates.w > 0 && windowCandidates.h > 0
+            %    plot(features(jj).Centroid(1), features(jj).Centroid(2), 'green.', 'MarkerSize', 20);
+            %    rectangle('Position', features(jj).BoundingBox, 'EdgeColor','yellow', 'LineWidth', 2);                 
+            % end
+                
             % Hough for detect squares and triangles 
             fprintf('Computing hough for squares and triangles... ');
             is_square_triangle = detect_square_triangle(mask, windowCandidates);
@@ -92,13 +97,25 @@ if valid_dataset
                 mask_detections(x1:x2, y1:y2) = mask(x1:x2, y1:y2);
                 
                 fprintf('Squares or/and triangles detected: %d\n', total_square_triangles);
-                fprintf('Circles detected: %d\n', total_circles);                 
+                fprintf('Circles detected: %d\n', total_circles);
+                
+                 windowCandidates_new = [windowCandidates_new; ...
+                   struct('x', windowCandidates.x, 'y', windowCandidates.y, ...
+                          'w', windowCandidates.w, 'h', windowCandidates.h)];
             else
                 disp('No found detections');
             end
         end
+        
+        % Save mask
         simage = sprintf('improved_task2/%s/%s.png', dataset, name_sample);
         imwrite(mask_detections, simage, 'png');
+        
+        % Save window candidates
+        windowCandidates = windowCandidates_new;
+        save_dir = strcat('improved_task2/',dataset,'/',name_sample,'.mat');
+        save(save_dir, 'windowCandidates');
+        
         % pause();
         % close all;
     end

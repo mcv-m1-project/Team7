@@ -27,30 +27,61 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
 
     % Number of image to display text on screen
     num_image = 0;                    
-
-    % Load partial old improved mask directory
-    sdir = strcat('improved_masks/', dataset);
-    samples = dir(sdir); 
-    samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
-    total_images = uint8(length(samples));
+    
+    % Load partial ground truth mask directory
+    if strcmp(dataset, 'test')
+        sdir =  strcat('../datasets/test_set/');
+        samples = dir(sdir); 
+        samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
+        total_images = uint8(length(samples));        
+    else
+        sdir =  strcat('../datasets/train_set/',dataset,'_split/');
+        samples = dir(sdir); 
+        samples = samples(arrayfun(@(x) x.name(1) == '0', samples));
+        total_images = uint8(length(samples));
+    end
+    
+    % Load partial directory window candidates 
+    sdir_windows = strcat('improved_',method,'/',dataset);
     
     disp('Starting image processing...');
-    for ii=1:total_images     
-        
-        % Load old improved masks
+    for ii=1:total_images    
+        % Get file name to process
         [~, name_sample, ~] = fileparts(samples(ii).name);
-        directory = sprintf('%s/%s.png', sdir, name_sample);
-        old_mask = logical(imread(directory));
+                
+        % Load ground truth mask
+        % sdir_mask = strcat(sdir,'/mask/mask.',name_sample,'.png');
+        % mask_gt = logical(imread(sdir_mask));
        
-        % Load mask
+        % Load new improved mask
         sdir_mask = strcat('improved_',method,'/',dataset,'/',name_sample,'.png');
         new_mask = logical(imread(sdir_mask));
+        
+        % Load specific window from improved mask
+        sdir_win = strcat(sdir_windows,'/',name_sample, '.mat');
+        windowCandidates = load(sdir_win);
+        windowCandidates = windowCandidates.windowCandidates;
 
+        % Iterate all detections on improved masks
+        [total_detections, ~] = size(windowCandidates);
+        
+        figure, imshow(new_mask);
+        for jj=1:total_detections
+          % Check if its a true detection
+          bounding_box = [windowCandidates(jj).x, windowCandidates(jj).y,...
+                          windowCandidates(jj).w, windowCandidates(jj).h];
+          if any(bounding_box)
+              rectangle('Position', bounding_box, 'EdgeColor','green', 'LineWidth',2); 
+          end                   
+        end
+        pause();
+        close all;
+        
         % Calculate metrics of image_dections and image
-        [TP, TN, FP, FN, ACC] = get_parameters(new_mask, old_mask);
-        [R, P, ~, ~, F1] = get_metrics(TP, TN, FP, FN);
-        results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
-        FP, FN, 0); 
+        % [TP, TN, FP, FN, ACC] = get_parameters(new_mask, mask_gt);
+        % [R, P, ~, ~, F1] = get_metrics(TP, TN, FP, FN);
+        % results.(method) = save_metrics(results.(method), ii, P, ACC, R, F1, TP, ...
+        % FP, FN, 0); 
 
         % Message to display on matlab
         num_image = num_image + 1;
@@ -59,11 +90,11 @@ if (valid_option_dataset == 1 && valid_option_method == 1)
         disp(message);
     end
         
-    final_results.(method) = get_results(results.(method),final_results.(method));
-    results = final_results.(method);
-    sdir = sprintf('evaluations_%s/results_%s.mat', method, dataset);
-    save(sdir, 'results');
-    fprintf('Save %s: done', sdir);
+    % final_results.(method) = get_results(results.(method),final_results.(method));
+    % results = final_results.(method);
+    % sdir = sprintf('evaluations_%s/results_%s.mat', method, dataset);
+    % save(sdir, 'results');
+    % fprintf('Save %s: done\n', sdir);
     
 end
 disp('evaluation(): done');
@@ -86,7 +117,7 @@ end
 % Output: dataset
 function [dataset, valid_option] = choose_dataset()
 valid_option = 0;
-prompt = 'Do you want evaluate test or train or validation split? [train/validation/test] : ';
+prompt = 'Do you want evaluate train or validation split? [train/validation/test] : ';
 dataset = input(prompt,'s');
 switch dataset
     case 'train'

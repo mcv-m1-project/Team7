@@ -59,6 +59,9 @@ if valid_dataset
         total_circles = 0;
         total_square_triangles = 0;
         
+        % List to save new window candidates
+        windowCandidates_new = [];
+        
         % Compute each window candidate
         [n, ~] = size(windowCandidates);
         for jj=1:n
@@ -91,13 +94,24 @@ if valid_dataset
                 mask_detections(x1:x2, y1:y2) = improved_mask(x1:x2, y1:y2);
                 
                 fprintf('Squares or/and triangles detected: %d\n', total_square_triangles);
-                fprintf('Circles detected: %d\n', total_circles);                 
+                fprintf('Circles detected: %d\n', total_circles);  
+                
+                windowCandidates_new = [windowCandidates_new; ...
+                   struct('x', windowCandidates(jj).x, 'y', windowCandidates(jj).y, ...
+                          'w', windowCandidates(jj).w, 'h', windowCandidates(jj).h)];
             else
                 disp('No found detections');
             end
         end
+        
+        % Save mask
         simage = sprintf('improved_task1/%s/%s.png', dataset, name_sample);
         imwrite(mask_detections, simage, 'png');
+        
+        % Save window candidates
+        windowCandidates = windowCandidates_new;
+        save_dir = strcat('improved_task1/',dataset,'/',name_sample,'.mat');
+        save(save_dir, 'windowCandidates');
         
         % figure();
         % set(gcf,'name','Improved masks','numbertitle','off','Position', ...
